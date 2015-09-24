@@ -28,8 +28,15 @@ trait LocalSparkContext extends BeforeAndAfterAll { self: Suite =>
 
   override def beforeAll() {
     val conf = new SparkConf()
-      .setMaster("local")
-      .setAppName("test")
+//      .setMaster("spark://127.0.0.1:7077")
+      .setMaster("local[6]")
+      .setAppName("testLSH")
+    //      .registerKryoClasses(Array(classOf[MyClass1], classOf[MyClass2]))
+//          .set("spark.cores.max", "6")
+//          .set("spark.executor.memory", "24g")
+    //      .set("spark.driver.memory", "4g")
+    //      .set("spark.executor.extraClassPath",
+    //         "target/scala-2.10/classes")
     sc = new SparkContext(conf)
     super.beforeAll()
   }

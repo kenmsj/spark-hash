@@ -29,7 +29,14 @@ class LSH(data : RDD[SparseVector], p : Int, m : Int, numRows : Int, numBands : 
     
     //we only want groups of size >= <minClusterSize>
     //(vector id, cluster id)
-    model.vector_cluster = model.bands.filter(x => x._2.size >= minClusterSize).map(x => x._2.toList.sorted).distinct().zipWithIndex().map(x => x._1.map(y => (y.asInstanceOf[Long], x._2))).flatMap(x => x.grouped(1)).map(x => x(0)).cache()
+    model.vector_cluster = model.bands.filter(x => x._2.size >= minClusterSize)
+      .map(x => x._2.toList.sorted)
+      .distinct()
+      .zipWithIndex()
+      .map(x => x._1.map(y => (y.asInstanceOf[Long], x._2)))
+      .flatMap(x => x.grouped(1))
+      .map(x => x(0))
+      .cache()
     
     //(cluster id, vector id)
     model.cluster_vector = model.vector_cluster.map(x => x.swap).cache()
@@ -52,13 +59,16 @@ class LSH(data : RDD[SparseVector], p : Int, m : Int, numRows : Int, numBands : 
   def jaccard(a : SparseVector, b : SparseVector) : Double = {
     val al = a.indices.toList
     val bl = b.indices.toList
-    al.intersect(bl).size / al.union(bl).size.doubleValue
+//    al.intersect(bl).size / al.union(bl).size.doubleValue
+    al.intersect(bl).size / ((al.size + bl.size)/2)
   }
   
   /** compute jaccard similarity over a list of vectors */
   def jaccard(l : List[SparseVector]) : Double = {
     l.foldLeft(l(0).indices.toList)((a1, b1) => a1.intersect(b1.indices.toList.asInstanceOf[List[Nothing]])).size / 
-    l.foldLeft(List())((a1, b1) => a1.union(b1.indices.toList.asInstanceOf[List[Nothing]])).distinct.size.doubleValue
+//    l.foldLeft(List())((a1, b1) => a1.union(b1.indices.toList.asInstanceOf[List[Nothing]])).distinct.size.doubleValue
+      (l.map(e => e.indices.size).reduce(_ + _).toDouble / l.length)
+      //(l.foldLeft(l(0).indices.size)((a1, b1) => a1 + b1.indices.size).toDouble / l.size)
   }  
   
 }
